@@ -44,3 +44,10 @@ function pushMessage(user, message) {
     // Scroll to the bottom
     messageContainer.scrollTop = messageContainer.scrollHeight;
 }
+
+function handleKeyDown(event) {
+    if (event.keyCode === 13) {
+        event.preventDefault();
+        sendMessage();
+    }
+}
