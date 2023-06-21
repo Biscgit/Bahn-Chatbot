@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Chat Bot</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <script src="../static/app.js">
+        const $SCRIPT_ROOT = {{ "root-route" }};
+    </script>
+</head>
+
+<body>
+<div class="container">
+    <h1>Title</h1>
+    <div class="chatbox" id="chatbox"></div>
+
+    <label for="message-input"></label>
+    <input type="text" id="message-input" placeholder="Type message here" onkeydown="handleKeyDown(event)">
+    <button id="send-button" onclick="sendMessage()">Send</button>
+</div>
+</body>
+
+</html>
