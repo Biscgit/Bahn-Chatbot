@@ -2,7 +2,7 @@
     font-size: 16px;
     padding: 15px;
     width: fit-content;
-
+    max-width: 90%;
     overflow-wrap: break-word;
     margin-bottom: 20px;
 }
