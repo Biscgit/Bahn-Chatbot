@@ -34,13 +34,16 @@ function sendMessage() {
         .then(resp => resp.json())
         .then(resp => {
             const answer = resp.message
-            pushMessage(1, message)
+            pushMessage(false, answer)
+
+            sendButton.disabled = false
         })
         .catch((error) => {
             console.error('Failed to get response:', error)
         })
 }
 
+// user: {true: user or false: bot}
 function pushMessage(user, message) {
     // create chat bauble
     let messageBauble = document.createElement("p")
