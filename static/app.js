@@ -1,7 +1,15 @@
+// let $SCRIPT_ROOT = {{ rootroute }};
+
 function sendMessage() {
     console.debug("Pressed Button!")
 
     let sendButton = document.getElementById("send-button")
+
+    // avoid multiple sending via enter-press
+    if (sendButton.disabled) {
+        return
+    }
+
     sendButton.disabled = true
 
     let inputElement = document.getElementById("message-input")
