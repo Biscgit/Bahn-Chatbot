@@ -1,0 +1,22 @@
+.message {
+    font-size: 16px;
+    padding: 15px;
+    width: fit-content;
+    margin-bottom: 20px;
+}
+
+.user_message {
+    border-radius: 20px 20px 20px 0;
+
+    background-color: white;
+    color: darkslategray;
+}
+
+.bot_message {
+    border-radius: 20px 20px 0 20px;
+
+    background-color: dodgerblue;
+    color: white;
+
+    margin-left: auto;
+}
