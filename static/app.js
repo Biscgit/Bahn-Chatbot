@@ -41,16 +41,17 @@ function sendMessage() {
 }
 
 function pushMessage(user, message) {
-    // user: {0: user or 1: bot}
-    let messageContainer = document.getElementById("chatbox");
+    // create chat bauble
+    let messageBauble = document.createElement("p")
+    messageBauble.classList.add('message')
+    messageBauble.classList.add(user ? 'user_message' : 'bot_message')
+    messageBauble.textContent = message
 
-    let messageElement = document.createElement("p");
-    messageElement.textContent = message;
-
-    messageContainer.appendChild(messageElement);
+    let messageContainer = document.getElementById("chat-body")
+    messageContainer.appendChild(messageBauble)
 
     // Scroll to the bottom
-    messageContainer.scrollTop = messageContainer.scrollHeight;
+    messageContainer.scrollTop = messageContainer.scrollHeight
 }
 
 function handleKeyDown(event) {
