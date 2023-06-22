@@ -15,7 +15,7 @@ async def favicon():
 
 @app.get("/")
 async def index(request: Request):
-    context = {"request": request, "root-route": "http://127.0.0.1:8000"}
+    context = {"request": request, "rootroute": "http://127.0.0.1:8000"}
     return templates.TemplateResponse("index.html", context)
 
 
