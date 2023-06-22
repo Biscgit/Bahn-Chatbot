@@ -1,4 +1,7 @@
+import asyncio
+
 from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -22,4 +25,5 @@ async def index(request: Request):
 @app.post("/request_answer")
 async def return_answer(request: dict) -> dict:
     print(request)
+    await asyncio.sleep(2)
     return {"message": "Answer!"}
