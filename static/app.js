@@ -16,13 +16,14 @@ function sendMessage() {
     const message = inputElement.value
 
     inputElement.value = ""
-    pushMessage(0, message)
 
     // field has message excluding whitespace only
     if (message.trim().length === 0) {
         sendButton.disabled = false
         return
     }
+
+    pushMessage(true, message)
 
     fetch('http://127.0.0.1:8000/request_answer', {
         method: 'POST',
