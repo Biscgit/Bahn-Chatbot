@@ -60,7 +60,7 @@ function pushMessage(user, message) {
 
 function handleKeyDown(event) {
     if (event.keyCode === 13) {
-        event.preventDefault();
-        sendMessage();
+        event.preventDefault()
+        sendMessage()
     }
 }
