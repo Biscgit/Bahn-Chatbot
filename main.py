@@ -8,6 +8,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
+@app.get("/favicon.ico")
+async def favicon():
+    return FileResponse("static/images/chat_icon.ico", media_type="image/x-icon")
+
+
 @app.get("/")
 async def index(request: Request):
     context = {"request": request, "root-route": "http://127.0.0.1:8000"}
