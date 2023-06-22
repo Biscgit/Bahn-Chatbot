@@ -6,10 +6,6 @@
 
 <head>
     <title>Chat Bot</title>
-    <link rel="stylesheet" href="../static/css/style.css">
-    <script src="../static/app.js">
-        const $SCRIPT_ROOT = {{ "root-route" }};
-    </script>
 </head>
 
 <body>
@@ -17,10 +13,25 @@
     <h1>Title</h1>
     <div class="chatbox" id="chatbox"></div>
 
-    <label for="message-input"></label>
-    <input type="text" id="message-input" placeholder="Type message here" onkeydown="handleKeyDown(event)">
-    <button id="send-button" onclick="sendMessage()">Send</button>
+    <div class="chat-body" id="chat-body"></div>
+
+    <div class="footer">
+        <label for="message-input"></label>
+        <input type="text" id="message-input" placeholder="Type message here" onkeydown="handleKeyDown(event)">
+        <button id="send-button" onclick="sendMessage()">Send</button>
+    </div>
+
+
+    <div class="chatbox" id="chatbox"></div>
+
 </div>
+
+<script src="../static/app.js"></script>
+<script>
+    // initial message
+    pushMessage(false, 'How may I help you today?')
+</script>
+
 </body>
 
 </html>
