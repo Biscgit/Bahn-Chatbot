@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class ChatData:
+    used_answers: dict = None
     state: int = 0
 
     last_changed: str = None
@@ -13,3 +14,4 @@ class ChatData:
 
     station: str = None
     end_station: str = None
+

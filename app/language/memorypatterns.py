@@ -5,10 +5,17 @@ from dataclasses import replace
 # executes memory management
 mem_patterns: list[tuple[str, builtins.callable]] = [
     (
-        r"(at|from)\s?(\d)?(\d)?(am|pm)(.*)",
+        r"(.*)(at|from)(.*)?(\d)?(\d)?(am|pm)(.*)",
         lambda data, *args: replace(
             data,
-            time=int(args[1] + args[2] if args[2] else args[1]) + 12 if args[3] == 'pm' else 0
+            time=int(args[2]) + (12 if args[5] == 'pm' else 0)
+        )
+    ),
+    (
+        r"\s\bnow\b",
+        lambda data, *args: replace(
+            data,
+            time=None
         )
     ),
     (
@@ -31,6 +38,10 @@ mem_patterns: list[tuple[str, builtins.callable]] = [
             data,
             end_station=args[1]
         )
+    ),
+    (
+        r"(.*)\bbetween\b(?:\sstation)?\s([\w\s]*?)(?:\b\sand\b\s|$)(.*)",
+        lambda data, *args: replace(data, station=args[1],end_station=args[2])
     ),
     (
         r"(.*)\b(in)\b\s(\w*)",

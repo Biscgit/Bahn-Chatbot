@@ -2,6 +2,7 @@
 
 let messages = []
 const user_id = Math.floor(Math.random() * 1e10)
+const root_domain = 'http://' + window.location.hostname + (window.location.port ? `:${window.location.port}` : '');
 
 function sendMessage() {
     console.debug("Pressed Button!")
@@ -29,7 +30,7 @@ function sendMessage() {
     pushMessage(true, message)
     push_history(true, message)
 
-    fetch('http://127.0.0.1:8000/request_answer', {
+    fetch( root_domain + '/request_answer', {
         method: 'POST',
         body: JSON.stringify({
             user_id: user_id,

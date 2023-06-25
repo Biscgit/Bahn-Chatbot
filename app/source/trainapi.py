@@ -4,6 +4,7 @@ import typing
 import math
 import threading
 
+# import line_profiler_pycharm
 from deutsche_bahn_api.api_authentication import ApiAuthentication
 from deutsche_bahn_api.station_helper import StationHelper, Station
 from deutsche_bahn_api.timetable_helper import TimetableHelper, Train
@@ -14,6 +15,21 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 
+class StoppableThread(threading.Thread):
+    """Thread class with a stop() method. The thread itself has to check
+    regularly for the stopped() condition."""
+
+    def __init__(self, *args, **kwargs):
+        super(StoppableThread, self).__init__(*args, **kwargs)
+        self._stop_event = threading.Event()
+
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
+
+
 class TrainAPI(ApiAuthentication):
     def __init__(self):
         with open("config/DBapi.toml", "rb") as file:
@@ -21,15 +37,15 @@ class TrainAPI(ApiAuthentication):
 
         super().__init__(data['api_id'], data['api_key'])
 
-        if not self.test_credentials():
+        """ if not self.test_credentials():
             print("Failed to authenticate DB Api")
-            exit(-127)
+            exit(-127)"""
 
         self.stations = StationHelper()
         self.stations.load_stations()
         logger.info("TrainAPI setup")
 
-    def calculate_route(self, s: str, e: str):
+    def calculate_route(self, s: str, e: str, time: int):
         if s is None:
             return "starting station"
 
@@ -49,8 +65,8 @@ class TrainAPI(ApiAuthentication):
         visited_stations: dict[str: int] = {}
         fastest_path = {}
 
-        length_factor = 1.2
-        total_max_distance = self.calculate_station_distance(start, destination) * length_factor + 50
+        length_factor = 1.25
+        total_max_distance = self.calculate_station_distance(start, destination) * length_factor
         print(f'{total_max_distance = }')
 
         def _execute(s: Station, used_trains: dict[str, str], max_distance: float) -> None:
@@ -68,7 +84,7 @@ class TrainAPI(ApiAuthentication):
 
             visited_stations.update({s.NAME: len(used_trains)})
 
-            for train in self.get_time_tables(s, None):
+            for train in self.get_time_tables(s, time):
                 # no busses
                 if (train_name := self.train_name(train)) in used_trains.values() \
                         or train_name.lower().startswith("bus"):
@@ -81,6 +97,7 @@ class TrainAPI(ApiAuthentication):
 
                 if destination.NAME in reachable_stations:
                     fastest_path = used_trains | {s.NAME: train_name}
+                    logging.info(f"Found path:\n{fastest_path}")
                     return
 
                 # sort out not found stations and stations that are too far away
@@ -88,7 +105,7 @@ class TrainAPI(ApiAuthentication):
                     y[0]: dist for x in reachable_stations
                     if (y := self.get_station_names(x)) and
                        (dist := self.calculate_station_distance(y[0], destination)) <
-                       min(max_distance * length_factor + 50, total_max_distance)
+                       min(max_distance * length_factor, total_max_distance)
                 }
 
                 reachable_stations = sorted(
@@ -97,7 +114,7 @@ class TrainAPI(ApiAuthentication):
                 )
 
                 # max recursion level: 3
-                if len(used_trains.keys()) >= 3:
+                if len(used_trains.keys()) >= 3 or fastest_path:
                     return
 
                 threads = []
@@ -132,7 +149,7 @@ class TrainAPI(ApiAuthentication):
         except IndexError:
             return "starting"
 
-        table = self.get_time_tables(station)
+        table = self.get_time_tables(station, 15)
 
         def check(t: Train) -> bool:
             if name.lower() == self.train_name(t).lower():
@@ -151,7 +168,7 @@ class TrainAPI(ApiAuthentication):
 
         return stations.split('|')
 
-    def get_departing(self, s):
+    def get_departing(self, s, time):
         if s is None:
             return "starting station"
 
@@ -160,7 +177,7 @@ class TrainAPI(ApiAuthentication):
         except IndexError:
             return "starting"
 
-        table = self.get_time_tables(station)
+        table = self.get_time_tables(station, time)
 
         def get_train_info(t: Train) -> str:
             line = self.train_name(t, force_id=True)
@@ -174,6 +191,25 @@ class TrainAPI(ApiAuthentication):
         routes = [get_train_info(train) for train in table]
 
         return routes
+
+    def get_distance(self, s1, s2):
+        if s1 is None:
+            return "starting station"
+
+        if s2 is None:
+            return "end station"
+
+        try:
+            start: Station = self.get_station_names(s1)[0]
+        except IndexError:
+            return "starting"
+
+        try:
+            destination: Station = self.get_station_names(s2)[0]
+        except IndexError:
+            return "end"
+
+        return self.calculate_station_distance(start, destination)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -191,7 +227,7 @@ class TrainAPI(ApiAuthentication):
 
     def get_time_tables(self, station: Station, time: typing.Optional[int] = None) -> list[Train]:
         tables = TimetableHelper(station, self)
-        return tables.get_timetable(None)
+        return tables.get_timetable(time)
 
     @staticmethod
     def calculate_station_distance(s1: Station, s2: Station) -> float:
@@ -214,3 +250,9 @@ class TrainAPI(ApiAuthentication):
 
         # Calculate the distance
         return abs(radius * c)
+
+
+if __name__ == '__main__':
+    api = TrainAPI()
+    print(api.calculate_route("München", "Deggendorf", 15))
+    print("done")

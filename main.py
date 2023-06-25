@@ -15,7 +15,7 @@ chats: dict[int, Chat] = {}
 
 
 @app.get("/favicon.ico")
-async def website_icon():
+def website_icon():
     return FileResponse("public/images/chat_icon.ico", media_type="image/x-icon")
 
 
@@ -36,7 +36,6 @@ def return_answer(request: dict) -> dict:
     chats.update({user_id: chat})
 
     return {"message": response}
-
 
 
 if __name__ == '__main__':
