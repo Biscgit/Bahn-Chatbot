@@ -168,6 +168,17 @@ mes_patterns: list[tuple[str, typing.Callable]] = [
         )
     ),
     (
+        "(thank you|thanks)",
+        lambda api, data, *args: (
+            random.choice([
+                "You are welcome! If you need any help I am here",
+                "Sure! Let me know if you need anything else",
+                "Thank you! I am here if you need anything"
+            ])
+            , data
+        )
+    ),
+    (
         "(quit|reset|stop|bye|leave)",
         lambda api, data, *args: (
             random.choice([
