@@ -3,22 +3,26 @@
     padding: 15px;
     width: fit-content;
     max-width: 90%;
+
     overflow-wrap: break-word;
     margin-bottom: 20px;
+
+
+    box-shadow: 0 3px 6px -2px rgba(0, 0, 0, 0.3);
 }
 
 .user_message {
     border-radius: 20px 20px 20px 0;
 
-    background-color: white;
-    color: darkslategray;
+    background-color: rgb(236, 0, 22);
+    color: ivory;
 }
 
 .bot_message {
     border-radius: 20px 20px 0 20px;
 
-    background-color: dodgerblue;
-    color: white;
+    background-color: rgb(245, 244, 241);
+    color: darkslategray;
 
     margin-left: auto;
 }

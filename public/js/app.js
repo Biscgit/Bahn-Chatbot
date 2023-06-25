@@ -1,5 +1,8 @@
 // let $SCRIPT_ROOT = {{ rootroute }};
 
+let messages = []
+const user_id = Math.floor(Math.random() * 1e10)
+
 function sendMessage() {
     console.debug("Pressed Button!")
 
@@ -24,22 +27,36 @@ function sendMessage() {
     }
 
     pushMessage(true, message)
+    push_history(true, message)
 
     fetch('http://127.0.0.1:8000/request_answer', {
         method: 'POST',
-        body: JSON.stringify({message: message}),
+        body: JSON.stringify({
+            user_id: user_id,
+            message: message,
+        }),
         headers: {'Content-Type': 'application/json'}
 
     })
         .then(resp => resp.json())
         .then(resp => {
-            const answer = resp.message
-            pushMessage(false, answer)
-
-            sendButton.disabled = false
+            console.log(resp.message)
+            pushMessage(false, resp.message)
+            push_history(false, resp.message)
         })
         .catch((error) => {
             console.error('Failed to get response:', error)
+
+            // get an "error"-Answer
+            const answers = [
+                "I am currently sleeping\ntry again later",
+                "I can't access our servers at the moment",
+                "There is nobody answering my requests"
+            ]
+            pushMessage(false, answers[Math.floor(Math.random() * answers.length)])
+        })
+        .then(() => {
+            sendButton.disabled = false
         })
 }
 
@@ -56,6 +73,29 @@ function pushMessage(user, message) {
 
     // Scroll to the bottom
     messageContainer.scrollTop = messageContainer.scrollHeight
+}
+
+function push_history(user, new_message) {
+    messages.push({user: messages})
+
+    if (messages.length > 10) {
+        messages.shift()
+    }
+}
+
+// window.onbeforeunload =
+function unl(event) {
+    // You can perform any necessary cleanup tasks here.
+
+    // Custom confirmation message
+    var confirmationMessage = 'Are you sure you want to leave this page?';
+
+    // For modern browsers
+    event.preventDefault();
+    event.returnValue = confirmationMessage;
+
+    // For older browsers
+    return confirmationMessage;
 }
 
 function handleKeyDown(event) {

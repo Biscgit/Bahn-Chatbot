@@ -1,17 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<link rel="stylesheet" href="../static/css/style.css">
-<link rel="stylesheet" href="../static/css/chatbauble.css">
+<link rel="stylesheet" href="../public/css/style.css">
+<link rel="stylesheet" href="../public/css/chat.css">
+<link rel="stylesheet" href="../public/css/chatbauble.css">
+<link rel="stylesheet" href="../public/css/cookies.css">
 
 <head>
     <title>Chat Bot</title>
 </head>
 
 <body>
+
+<div class="page-text">
+
+</div>
+
+<div class="topnav">
+    <img
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Deutsche_Bahn_AG-Logo.svg/2560px-Deutsche_Bahn_AG-Logo.svg.png"
+            alt="No Logo"
+    >
+    <a href="">Home</a>
+    <a href="">News</a>
+    <a class="active" href="">Planner</a>
+    <a href="">Tickets</a>
+    <a href="">Contact</a>
+    <a href="">About</a>
+</div>
+
+
+<div class="site-text">
+  <h2>DB Travel Planner</h2>
+  <ul>
+  <li>Plan routes from a station to another</li>
+  <li>Display travel options from a station</li>
+  <li>Show routes of a trainline</li>
+</ul>
+
+</div>
+
 <div class="chat-container">
     <div class="header">
-        <h1>Chat Support</h1>
+        <h1>DB Chat</h1>
     </div>
 
     <div class="chat-body" id="chat-body"></div>
@@ -22,17 +53,25 @@
         <button id="send-button" onclick="sendMessage()">Send</button>
     </div>
 
-
     <div class="chatbox" id="chatbox"></div>
-
 </div>
 
-<script src="../static/app.js"></script>
+<footer class="cookie-footer">
+    <div class="cookie-notice">
+        <p>
+            This website does not use cookies. By continuing you consent to not having any cookies.
+            <button class="close-btn">Continue</button>
+        </p>
+    </div>
+</footer>
+
+
+<script src="../public/js/app.js"></script>
+<script src="../public/js/cookie.js"></script>
 <script>
     // initial message
     pushMessage(false, 'How may I help you today?')
 </script>
-
 </body>
 
 </html>
