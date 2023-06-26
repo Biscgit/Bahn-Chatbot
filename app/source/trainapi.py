@@ -3,6 +3,7 @@ import tomllib
 import typing
 import math
 import threading
+from concurrent.futures import ThreadPoolExecutor
 
 # import line_profiler_pycharm
 from deutsche_bahn_api.api_authentication import ApiAuthentication
@@ -69,72 +70,70 @@ class TrainAPI(ApiAuthentication):
         total_max_distance = self.calculate_station_distance(start, destination) * length_factor
         print(f'{total_max_distance = }')
 
-        def _execute(s: Station, used_trains: dict[str, str], max_distance: float) -> None:
-            nonlocal fastest_path
 
-            # stop if found
-            if fastest_path:
-                return
+        with ThreadPoolExecutor(max_workers=25) as pool:
 
-            # return if already processed except if shorter path found
-            if hops := visited_stations.get(s.NAME):
-                # shorter path already exists
-                if hops <= len(used_trains):
+            def _execute(s: Station, used_trains: dict[str, str], max_distance: float) -> None:
+                nonlocal fastest_path
+
+                # stop if found
+                if fastest_path:
                     return
 
-            visited_stations.update({s.NAME: len(used_trains)})
+                # return if already processed except if shorter path found
+                if hops := visited_stations.get(s.NAME):
+                    # shorter path already exists
+                    if hops <= len(used_trains):
+                        return
 
-            for train in self.get_time_tables(s, time):
-                # no busses
-                if (train_name := self.train_name(train)) in used_trains.values() \
-                        or train_name.lower().startswith("bus"):
-                    continue
+                visited_stations.update({s.NAME: len(used_trains)})
 
-                # adding all stations on the plan except local
-                reachable_stations = train.stations.split('|')
-                if hasattr(train, "passed_stations"):
-                    reachable_stations.extend(train.passed_stations.split('|'))
+                for train in self.get_time_tables(s, time):
+                    # no busses
+                    if (train_name := self.train_name(train)) in used_trains.values() \
+                            or train_name.lower().startswith("bus"):
+                        continue
 
-                if destination.NAME in reachable_stations:
-                    fastest_path = used_trains | {s.NAME: train_name}
-                    logging.info(f"Found path:\n{fastest_path}")
-                    return
+                    # adding all stations on the plan except local
+                    reachable_stations = train.stations.split('|')
+                    if hasattr(train, "passed_stations"):
+                        reachable_stations.extend(train.passed_stations.split('|'))
 
-                # sort out not found stations and stations that are too far away
-                station_distance = {
-                    y[0]: dist for x in reachable_stations
-                    if (y := self.get_station_names(x)) and
-                       (dist := self.calculate_station_distance(y[0], destination)) <
-                       min(max_distance * length_factor, total_max_distance)
-                }
+                    if destination.NAME in reachable_stations:
+                        fastest_path = used_trains | {s.NAME: train_name}
+                        logging.info(f"Found path:\n{fastest_path}")
+                        pool.shutdown(wait=False)
+                        return
 
-                reachable_stations = sorted(
-                    station_distance.keys(),
-                    key=lambda x: station_distance[x]
-                )
+                    # sort out not found stations and stations that are too far away
+                    station_distance = {
+                        y[0]: dist for x in reachable_stations
+                        if (y := self.get_station_names(x)) and
+                           (dist := self.calculate_station_distance(y[0], destination)) <
+                           min(max_distance * length_factor, total_max_distance)
+                    }
 
-                # max recursion level: 3
-                if len(used_trains.keys()) >= 3 or fastest_path:
-                    return
+                    reachable_stations = sorted(
+                        station_distance.keys(),
+                        key=lambda x: station_distance[x]
+                    )
 
-                threads = []
+                    # max recursion level: 3
+                    if len(used_trains.keys()) >= 3 or fastest_path:
+                        return
 
-                for stat in reachable_stations:
-                    thread = threading.Thread(
-                        target=_execute,
-                        args=(
+                    # threads = []
+
+                    for stat in reachable_stations:
+                        pool.submit(
+                            _execute,
                             stat,
                             used_trains | {s.NAME: train_name},
-                            station_distance[stat],
+                            station_distance[stat]
                         )
-                    )
-                    threads.append(thread)
-                    thread.start()
 
-                for thread in threads:
-                    thread.join()
+            _execute(start, {}, total_max_distance)
 
-        _execute(start, {}, total_max_distance)
         return fastest_path | {destination.NAME: None}
 
     def get_line(self, s, name):

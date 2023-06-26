@@ -93,6 +93,11 @@ class Chat(object):
                 "Try to be more specific with what you say, I do not understand",
                 "I do not have an answer to that",
                 "Please say it again with different words because I do not understand"
+            ]) + "\n" + choice_cacher(self._data, [
+                "Maybe ask about a train route",
+                "You can ask me about departing trains instead",
+                "I can give you a random train fact!",
+                "If you need the hotline just let me know"
             ])
 
         else:
