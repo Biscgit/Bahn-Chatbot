@@ -41,7 +41,6 @@ function sendMessage() {
     })
         .then(resp => resp.json())
         .then(resp => {
-            console.log(resp.message)
             pushMessage(false, resp.message)
             push_history(false, resp.message)
         })
@@ -89,7 +88,7 @@ function unl(event) {
     // You can perform any necessary cleanup tasks here.
 
     // Custom confirmation message
-    var confirmationMessage = 'Are you sure you want to leave this page?';
+    const confirmationMessage = 'Are you sure you want to leave this page?';
 
     // For modern browsers
     event.preventDefault();
