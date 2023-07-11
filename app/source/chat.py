@@ -12,7 +12,7 @@ nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 
 API = TrainAPI()
-API = None
+# API = None
 
 
 class Chat(object):
