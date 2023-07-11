@@ -50,7 +50,7 @@ class TrainAPI(ApiAuthentication):
         visited_stations: dict[str: int] = {}
         fastest_path = {}
 
-        length_factor = 1.25
+        length_factor = 1.3
         total_max_distance = self.calculate_station_distance(start, destination) * length_factor
         print(f'{total_max_distance = }')
 
@@ -63,7 +63,7 @@ class TrainAPI(ApiAuthentication):
                 if fastest_path:
                     return
 
-                # return if already processed except if shorter path found
+                # return if already processed except if a shorter path found
                 if hops := visited_stations.get(s.NAME):
                     # shorter path already exists
                     if hops <= len(used_trains):
@@ -72,7 +72,7 @@ class TrainAPI(ApiAuthentication):
                 visited_stations.update({s.NAME: len(used_trains)})
 
                 for train in self.get_time_tables(s, time):
-                    # no busses
+                    # no buses and no used trains
                     if (train_name := self.train_name(train)) in used_trains.values() \
                             or train_name.lower().startswith("bus"):
                         continue
@@ -85,7 +85,6 @@ class TrainAPI(ApiAuthentication):
                     if destination.NAME in reachable_stations:
                         fastest_path = used_trains | {s.NAME: train_name}
                         logging.info(f"Found path:\n{fastest_path}")
-                        pool.shutdown(wait=False)
                         return
 
                     # sort out not found stations and stations that are too far away
@@ -93,27 +92,30 @@ class TrainAPI(ApiAuthentication):
                         y[0]: dist for x in reachable_stations
                         if (y := self.get_station_names(x)) and
                            (dist := self.calculate_station_distance(y[0], destination)) <
-                           min(max_distance * length_factor, total_max_distance)
+                           min(max_distance * length_factor + 10, total_max_distance)
                     }
-
                     reachable_stations = sorted(
                         station_distance.keys(),
                         key=lambda x: station_distance[x]
                     )
 
                     # max recursion level: 3
-                    if len(used_trains.keys()) >= 3 or fastest_path:
+                    if len(used_trains.keys()) >= 2 or fastest_path:
                         return
 
-                    # threads = []
-
                     for stat in reachable_stations:
-                        pool.submit(
+                        logging.info(f" submitting station: \t{stat.NAME}")
+                        f = pool.submit(
                             _execute,
-                            stat,
-                            used_trains | {s.NAME: train_name},
-                            station_distance[stat]
+                            *(
+                                stat,
+                                used_trains | {s.NAME: train_name},
+                                station_distance[stat],
+                            )
                         )
+
+                        # can't join all at once because of deadlock with max 25 threads
+                        f.result()
 
             _execute(start, {}, total_max_distance)
 
