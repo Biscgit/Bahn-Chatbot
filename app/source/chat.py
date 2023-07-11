@@ -1,4 +1,5 @@
 import copy
+import logging
 import string
 import nltk
 
@@ -7,11 +8,11 @@ from app.source.chatdata import ChatData
 from .trainapi import TrainAPI
 from ..language.processing import choice_cacher
 
-
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 
 API = TrainAPI()
+API = None
 
 
 class Chat(object):
@@ -61,26 +62,40 @@ class Chat(object):
         else:
             self._asked_questions.append(message)
 
-        # cant be handles by message interpretation
+        # at cant be handled by message interpretation: quick fix
         original_message = message
         if len(x := message.split(' at ', maxsplit=1)) > 1:
             message = f'at {x[1]} {x[0]}'
 
-        # message analyzing
+        # message analyzing: chat memory
         for pattern, answer_function in memory_patterns:
             match = nltk.re.search(pattern, message, flags=nltk.re.IGNORECASE)
+
             if match:
                 groups = match.groups()
                 self._data = answer_function(self._data, *groups)
 
-        if original_message.startswith(("and", "to")) and len(self._asked_questions) >= 2:
+        # "continuing" the last message
+        if original_message.startswith(("and", "to", "another")) and len(self._asked_questions) >= 2:
             self._asked_questions.pop(-1)
             message = self._asked_questions[-1]
 
+        # message analyzing: chat action
         for pattern, answer_function in message_patterns:
-            match = nltk.re.search(pattern, message, flags=nltk.re.IGNORECASE)
-            if match:
-                return answer_function(API, self._data)
+            if match := nltk.re.search(pattern, message, flags=nltk.re.IGNORECASE):
+                try:
+                    print(f'First valid pattern: {pattern}')
+                    return answer_function(API, self._data, match.groups())
+
+                except Exception as e:
+                    logging.error(f'Error in message generation: {e}')
+                    return "Internal Server Exception 500"
+
+        print(f'No valid pattern found')
+
+        # on unrecognized message pattern: use the last valid message for next call
+        if len(self._asked_questions) >= 1:
+            self._asked_questions.pop(-1)
 
         after_data = copy.deepcopy(self._data)
         after_data.used_answers = None

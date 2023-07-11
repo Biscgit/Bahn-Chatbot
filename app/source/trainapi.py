@@ -2,7 +2,6 @@ import logging
 import tomllib
 import typing
 import math
-import threading
 from concurrent.futures import ThreadPoolExecutor
 
 # import line_profiler_pycharm
@@ -14,21 +13,6 @@ __all__ = ['TrainAPI']
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
-
-
-class StoppableThread(threading.Thread):
-    """Thread class with a stop() method. The thread itself has to check
-    regularly for the stopped() condition."""
-
-    def __init__(self, *args, **kwargs):
-        super(StoppableThread, self).__init__(*args, **kwargs)
-        self._stop_event = threading.Event()
-
-    def stop(self):
-        self._stop_event.set()
-
-    def stopped(self):
-        return self._stop_event.is_set()
 
 
 class TrainAPI(ApiAuthentication):
@@ -69,7 +53,6 @@ class TrainAPI(ApiAuthentication):
         length_factor = 1.25
         total_max_distance = self.calculate_station_distance(start, destination) * length_factor
         print(f'{total_max_distance = }')
-
 
         with ThreadPoolExecutor(max_workers=25) as pool:
 

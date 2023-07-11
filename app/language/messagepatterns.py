@@ -84,7 +84,7 @@ mes_patterns: list[tuple[str, typing.Callable]] = [
         lambda api, data, *args: (
             choice_cacher(data, [
                 "A Siemens electric train needs about 11s to get to 100km/h",
-                "You can travel to Sylt via Train. The route has been built 1927/1928",
+                "You can travel to Sylt via Train. The route has been built in 1927/1928",
                 "A Train is only late when it arrives at least 6 minutes late.",
                 "The first train in Germany started operating on the 07.12.1835",
                 "Every third ICE train is behind schedule",
@@ -115,7 +115,28 @@ mes_patterns: list[tuple[str, typing.Callable]] = [
         )
     ),
     (
-        "(thank you|thanks)",
+        r"(bring|take)?(.*)(dog|animal|cat|pet)",
+        lambda api, data, *args: (
+            choice_cacher(data, [
+                "You can bring small animals with you.",
+                "It is possible to take small dogs with you, but you need to buy "
+                "a ticket for larger ones.",
+                "Small pets can travel for free, while bigger pets need their own train ticket."
+            ]) + "\nNote that service animals are always free when wearing appropriate accessory"
+        )
+    ),
+    (
+        r"(can|possible|allowed)?(.*)(smoke|cigarettes)",
+        lambda api, data, *args: (
+            choice_cacher(data, [
+                "Smoking on trains is strictly prohibited",
+                "It is allowed in certain areas at train stations but not on the train",
+                "No, you can only smoke in marked areas at stations"
+            ])
+        )
+    ),
+    (
+        r"(thank you|thanks)",
         lambda api, data, *args: (
             choice_cacher(data, [
                 "You are welcome! If you need any help I am here",
@@ -125,7 +146,7 @@ mes_patterns: list[tuple[str, typing.Callable]] = [
         )
     ),
     (
-        "(quit|reset|stop|bye|leave|clear)",
+        r"(quit|reset|stop|bye|leave|clear)",
         lambda api, data, *args: (
             choice_cacher(replace(
                 data, state=0, last_changed=None, route=None, train=None,
