@@ -2,6 +2,7 @@ import logging
 import tomllib
 import typing
 import math
+import sys
 from concurrent.futures import ThreadPoolExecutor
 
 # import line_profiler_pycharm
@@ -22,13 +23,13 @@ class TrainAPI(ApiAuthentication):
 
         super().__init__(data['api_id'], data['api_key'])
 
-        """ if not self.test_credentials():
-            print("Failed to authenticate DB Api")
-            exit(-127)"""
+        if not self.test_credentials():
+            print("Critical: Failed to authenticate DB Api!\nCheck credentials in config/DBapi.toml")
+            sys.exit(-127)
 
         self.stations = StationHelper()
         self.stations.load_stations()
-        logger.info("TrainAPI setup")
+        print("TrainAPI successfully setup")
 
     def calculate_route(self, s: str, e: str, time: int):
         if s is None:
