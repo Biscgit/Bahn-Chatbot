@@ -1,6 +1,8 @@
 import builtins
 from dataclasses import replace
 
+"""regex patterns that manipulate chatdata
+This can be expanded via the pattern below"""
 
 # executes memory management
 mem_patterns: list[tuple[str, builtins.callable]] = [
@@ -41,7 +43,7 @@ mem_patterns: list[tuple[str, builtins.callable]] = [
     ),
     (
         r"(.*)\bbetween\b(?:\sstation)?\s([\w\s]*?)(?:\b\sand\b\s|$)(.*)",
-        lambda data, *args: replace(data, station=args[1],end_station=args[2])
+        lambda data, *args: replace(data, station=args[1], end_station=args[2])
     ),
     (
         r"(.*)\b(in)\b\s(\w*)",

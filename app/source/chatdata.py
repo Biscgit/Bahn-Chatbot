@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class ChatData:
+    """Dataclass containing chatdata and manipulated by processing messages"""
+
     used_answers: dict = None
     state: int = 0
 

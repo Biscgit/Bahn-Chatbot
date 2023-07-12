@@ -17,12 +17,15 @@ logger = logging.getLogger()
 
 
 class TrainAPI(ApiAuthentication):
+    """Instance for communication with DB-API and processing"""
+
     def __init__(self):
         with open("config/DBapi.toml", "rb") as file:
             data = tomllib.load(file)['DBApi']
 
         super().__init__(data['api_id'], data['api_key'])
 
+        # check if correct login
         if not self.test_credentials():
             print("Critical: Failed to authenticate DB Api!\nCheck credentials in config/DBapi.toml")
             sys.exit(-127)
@@ -32,6 +35,14 @@ class TrainAPI(ApiAuthentication):
         print("TrainAPI successfully setup")
 
     def calculate_route(self, s: str, e: str, time: int):
+        """Calculates route efficiently with an own implemented A* algorithm.
+        The db api does not allow for checking routes, only to get stations with trains and the stations from trains.
+        From that I implemented (which took over a day) my own relatively fast algorithm that finds routes between
+        two stations speed up by distance (only coordinates on the globe are provided) and using as fewer trains and
+        stations as possible to reduce api request amount.
+        """
+
+        # checking necessary information -> asking if not provided yet
         if s is None:
             return "starting station"
 
@@ -48,13 +59,16 @@ class TrainAPI(ApiAuthentication):
         except IndexError:
             return "end"
 
+        # variables
         visited_stations: dict[str: int] = {}
         fastest_path = {}
 
-        length_factor = 1.3
+        # 25% overhead for path finding
+        length_factor = 1.25
         total_max_distance = self.calculate_station_distance(start, destination) * length_factor
         print(f'{total_max_distance = }')
 
+        # running requests threaded
         with ThreadPoolExecutor(max_workers=25) as pool:
 
             def _execute(s: Station, used_trains: dict[str, str], max_distance: float) -> None:
@@ -89,6 +103,7 @@ class TrainAPI(ApiAuthentication):
                         return
 
                     # sort out not found stations and stations that are too far away
+                    # reduces max distance on getting closer to avoid spreading too far
                     station_distance = {
                         y[0]: dist for x in reachable_stations
                         if (y := self.get_station_names(x)) and
@@ -101,7 +116,7 @@ class TrainAPI(ApiAuthentication):
                     )
 
                     # max recursion level: 3
-                    if len(used_trains.keys()) >= 2 or fastest_path:
+                    if len(used_trains.keys()) >= 3 or fastest_path:
                         return
 
                     for stat in reachable_stations:
@@ -120,9 +135,13 @@ class TrainAPI(ApiAuthentication):
 
             _execute(start, {}, total_max_distance)
 
+        # returns used lines and stops where one needs to change trains
         return fastest_path | {destination.NAME: None}
 
     def get_line(self, s, name):
+        """Returns all stations a train passes"""
+
+        # checking necessary information -> asking if not provided yet
         if s is None:
             return "starting station"
 
@@ -136,24 +155,28 @@ class TrainAPI(ApiAuthentication):
 
         table = self.get_time_tables(station, 15)
 
+        # check for right train
         def check(t: Train) -> bool:
             if name.lower() == self.train_name(t).lower():
                 return True
 
             return name == t.train_number
 
+        # first train that fulfills the name
         table.sort(key=lambda x: x.departure)
         try:
             train = [train for train in table if check(train)][0]
         except IndexError:
             return None
 
+        # returns station names as a list
         stations = ((train.passed_stations + '|') if hasattr(train, "passed_stations") else "") \
                    + f"{station.NAME}|" + train.stations
 
         return stations.split('|')
 
     def get_departing(self, s, time):
+        """Returns a list of which trains depart at what time from an inputted station"""
         if s is None:
             return "starting station"
 
@@ -172,12 +195,14 @@ class TrainAPI(ApiAuthentication):
 
             return f"[{time}] {line} to {destination}"
 
+        # returns list of trains that have been found
         table.sort(key=lambda x: x.departure)
         routes = [get_train_info(train) for train in table]
 
         return routes
 
     def get_distance(self, s1, s2):
+        """returns the distance between two stations with checks"""
         if s1 is None:
             return "starting station"
 
@@ -216,6 +241,8 @@ class TrainAPI(ApiAuthentication):
 
     @staticmethod
     def calculate_station_distance(s1: Station, s2: Station) -> float:
+        """Calculate distance from latitude and longitude"""
+
         # earth radius
         radius = 6371
 

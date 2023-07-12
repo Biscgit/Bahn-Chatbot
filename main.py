@@ -26,6 +26,7 @@ def index(request: Request):
 
 @app.post("/request_answer")
 def return_answer(request: dict) -> dict:
+    """Answering requests with data from unique chats"""
     user_id = request.get("user_id")
 
     chat = chats.get(user_id, Chat(user_id))

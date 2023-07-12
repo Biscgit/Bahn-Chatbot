@@ -2,7 +2,15 @@ import random
 
 
 def choice_cacher(data, options: list[str]) -> str:
-    level = 3
+    """Function that returns an answer from the provided options
+    to avoid repetition of messages, and they get a weight if they get selected, which
+    reduces the chance of them appearing for a second time in a row.
+    The weights are calculated depending on the number of provided inputs.
+
+    The weights are chat-specific and are added up on chatting.
+    """
+
+    level = len(options)
 
     if data.used_answers is None:
         data.used_answers = {}
@@ -15,6 +23,10 @@ def choice_cacher(data, options: list[str]) -> str:
     data.used_answers.update({choice: (matches.get(choice) + level)})
 
     return choice
+
+
+"""functions used for processing inputs with deeper logic needed. Returns an answer in messagepatterns.py
+depending on if the request was successfully and changes chat states as well."""
 
 
 def route_planner(api, data, *args) -> str:
@@ -124,7 +136,7 @@ def show_depart(api, data, *args) -> str:
             'I found these trains leaving',
             'Following trains will leave'
         ]) + f" {s} " + (f"at {time % 12}{'pm' if time // 12 else 'am'}\n" if time \
-            else 'this hour:\n') + "\n".join(lines)
+                             else 'this hour:\n') + "\n".join(lines)
 
 
 def show_distance(api, data, *args) -> str:

@@ -2,7 +2,8 @@ __all__ = ["mes_patterns"]
 
 import typing
 
-from dataclasses import replace
+"""regex patterns that generate an answer via a function.
+This can be expanded via the pattern below"""
 from .processing import *
 
 

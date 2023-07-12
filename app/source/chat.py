@@ -8,18 +8,21 @@ from app.source.chatdata import ChatData
 from .trainapi import TrainAPI
 from ..language.processing import choice_cacher
 
+# download needed natural language libraries
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 
+# single api instance
 API = TrainAPI()
-# API = None
 
 
 class Chat(object):
+    """Chat containing data for every connection"""
+
     def __init__(self, user_id: str):
         self._id = user_id
 
-        # 0: input, >0: waiting for data
+        # 0: input, >= 1: waiting for data
         self._missing: list = []
         self._data: ChatData = ChatData()
 
@@ -31,6 +34,10 @@ class Chat(object):
         return text.translate(translator)
 
     def chatbot_response(self, message: str) -> str:
+        """Function which takes the input message and generates one based on the input
+        and past conversation data."""
+
+        # formatting message and checks
         before_data = copy.deepcopy(self._data)
 
         if message is None:
@@ -38,6 +45,7 @@ class Chat(object):
 
         message: str = self.remove_punctuation(message)
 
+        # check if question already asked
         if message in self._asked_questions and self._data.state == 0:
             return choice_cacher(self._data, [
                 "You have already asked me this question",
@@ -45,7 +53,7 @@ class Chat(object):
                 "You can ask me other things too!"
             ])
 
-        # more input states
+        # input states for adding needed information (1: station, 2: train), resets state after input
         if self._data.state > 0:
             if self._data.state == 1:
                 if self._data.station:
@@ -97,11 +105,13 @@ class Chat(object):
         if len(self._asked_questions) >= 1:
             self._asked_questions.pop(-1)
 
+        # answer depending on if information has been updated
         after_data = copy.deepcopy(self._data)
         after_data.used_answers = None
         before_data.used_answers = None
 
         if before_data == after_data:
+            # provides questions if nothing got recognized -> chat interaction
             return choice_cacher(self._data, [
                 "Could you rephrase that please? I do not understand",
                 "I do not understand what you are trying to say",
