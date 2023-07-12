@@ -13,7 +13,7 @@ mes_patterns: list[tuple[str, typing.Callable]] = [
         route_planner
     ),
     (
-        r"(.*)\bshow\b\s(.*)\b(line|train|stop|station)?\s\b(.*)",
+        r"(show)(.*)(line|train|stop|station|route)",
         show_route
     ),
     (
