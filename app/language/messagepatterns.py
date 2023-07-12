@@ -148,10 +148,7 @@ mes_patterns: list[tuple[str, typing.Callable]] = [
     (
         r"(quit|reset|stop|bye|leave|clear)",
         lambda api, data, *args: (
-            choice_cacher(replace(
-                data, state=0, last_changed=None, route=None, train=None,
-                time=None, station=None, end_station=None
-            ), [
+            choice_cacher(data.reset(), [
                 "See you later my friend! I hope I could help you",
                 "Bye! I hope I was able to answer your questions",
                 "See you! I hope my answers answered your questions"
