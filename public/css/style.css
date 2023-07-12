@@ -102,7 +102,7 @@ body::before {
     padding: 15px 30px 15px 55px;
 
     font-weight: 1000;
-    color: rgba(175, 180, 187, 1);
+    color: rgba(200, 205, 202, 0.8);
 
     overflow-y: auto;
 }
@@ -111,7 +111,7 @@ body::before {
     font-size: 600%;
     max-width: 600px;
     margin-bottom: 70px;
-    color: ivory;
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .site-text ul li {
