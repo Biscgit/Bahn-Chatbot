@@ -233,6 +233,7 @@ class TrainAPI(ApiAuthentication):
         ])
 
     def get_station_names(self, name: str, matches: int = None) -> list[Station]:
+        name = name[0].upper() + name[1:]
         return self.stations.find_stations_by_name(name)
 
     def get_time_tables(self, station: Station, time: typing.Optional[int] = None) -> list[Train]:
