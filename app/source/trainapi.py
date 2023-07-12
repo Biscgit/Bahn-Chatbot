@@ -235,9 +235,3 @@ class TrainAPI(ApiAuthentication):
 
         # Calculate the distance
         return abs(radius * c)
-
-
-if __name__ == '__main__':
-    api = TrainAPI()
-    print(api.calculate_route("München", "Deggendorf", 15))
-    print("done")
