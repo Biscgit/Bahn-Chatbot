@@ -1,0 +1,5 @@
+# free at: https://developers.deutschebahn.com/db-api-marketplace/apis/start
+
+[DBApi]
+api_id = "<INSERT ID>"
+api_key = "<INSERT KEY>"
